@@ -1,15 +1,38 @@
-import React from 'react'
-import { Text, StyleSheet, View, Button } from 'react-native'
+import axios from 'axios'
+import React, { useState } from 'react'
+import { Text, StyleSheet, View, Button, ActivityIndicator } from 'react-native'
 import SslCommerzScreen from './SslCommerzScreen'
 
 
-export default PaymentScreen = ({navigation}) => {
+export default PaymentScreen = ({ navigation }) => {
+  const [isLoading, setisLoading] = useState(false)
 
+  const paymentHandler = async () => {
+    setisLoading(true)
+    const payload = {
+      total_amount: 500,
+    }
+    try {
+      const res = await axios.post('http://sslcommerz.doctorpathao.com/public/api/checkout/ssl/pay', payload)
+      console.log('ssl respons', res)
+      setisLoading(false)
+      if (res.data) {
+        navigation.navigate('SslCommerz', {
+          data: {url: res.data},
+        })
+      }
+    } catch (error) {
+      setisLoading(false)
+      console.log('ssl respons error', error)
+    }
 
-  const paymentHandler = () => {
-    navigation.navigate('SslCommerz')
+    //navigation.navigate('SslCommerz')
   }
-
+  const Spinner = () => (
+    <View style={styles.activityContainer}>
+      <ActivityIndicator size="large" color={'black'} />
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -25,14 +48,14 @@ export default PaymentScreen = ({navigation}) => {
       <View style={styles.paymentContainer}>
         <Text style={styles.heading}>Payment Info</Text>
         <Text style={styles.paymentNormalText}>Total: 500 BDT</Text>
-       
+
       </View>
       <View style={styles.buttonView}>
         <Button
-          onPress={() => paymentHandler() }
-          title="Pay Now"
+          onPress={() => paymentHandler()}
+          title={!isLoading ? 'Pay Now' : "loading..."}
           color="#841584"
-          accessibilityLabel="Learn more about this purple button"
+          accessibilityLabel="Pay Now"
         />
       </View>
     </View>
@@ -68,5 +91,14 @@ const styles = StyleSheet.create({
   },
   buttonView: {
     marginTop: 10,
-  }
+  },
+  activityContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: '100%',
+    width: '100%'
+  },
 })
